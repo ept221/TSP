@@ -9,7 +9,7 @@ import matplotlib.animation as animation
 class Solver:
 	def __init__(self):
 		self.cities_x_list = []
-		self.cities_list = []
+		self.cities_y_list = []
 
 		self.solution_x_list = []
 		self.solution_y_list = []
@@ -23,7 +23,7 @@ class Solver:
 		self.best_y_list = []
 		self.best_cost = 0
 
-		self.num_of_swaps = 2
+		self.num_of_swaps = 1
 		self.path_plot = None
 
 		self.T = 0
@@ -91,6 +91,7 @@ class Solver:
 ##########################################################################
 # create solver and initial list of cities
 num_of_cities = 20
+iterations = 3000
 solver = Solver()
 solver.cities_x_list = [np.random.rand() for i in range(num_of_cities)]
 solver.cities_y_list = [np.random.rand() for i in range(num_of_cities)]
@@ -110,12 +111,11 @@ def update(frame, max_frames, solver):
 		solver.update_path_plot()
 	else:
 		solver.plot_best_path()
-		
+
 	return
 
 ##########################################################################
 # animate
-count = 100000
-ani = animation.FuncAnimation(fig, update, frames=count, interval=1, blit=False, repeat=False, fargs=(count,solver))
+ani = animation.FuncAnimation(fig, update, frames=iterations, interval=1, blit=False, repeat=False, fargs=(iterations,solver))
 plt.show()
 ##########################################################################
