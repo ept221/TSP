@@ -33,8 +33,12 @@ class Solver:
 		self.k = 1
 
 		self.iterations = iterations
+
+		self.cost_history = []
+		self.time = []
+		self.cost_plot = None
 		##################################################################
-		self.fig, self.ax = plt.subplots()
+		self.fig, self.ax = plt.subplots(2)
 
 		self.create_path()
 		self.plot_cities()
@@ -47,13 +51,17 @@ class Solver:
 		self.best_cost = self.solution_cost
 
 	def update(self, frame, max_frames):
+		self.time.append(frame)
 		if(frame < (max_frames-1)):
 			self.swap()
 			self.compute_temp_cost()
 			self.select(frame)
-			self.update_path_plot()
+			self.update_path_plot(self.solution)
+			self.cost_history.append(self.solution_cost)
 		else:
-			self.plot_best_path()
+			self.update_path_plot(self.best)
+			self.cost_history.append(self.best_cost)
+			self.plot_cost()
 
 	def swap(self):
 		self.temp = self.solution.copy()
@@ -92,35 +100,34 @@ class Solver:
 			self.best = self.solution
 			self.best_cost = self.solution_cost
 
-	def update_path_plot(self):
-		solution_x_list = [city.x for city in self.solution]
-		solution_y_list = [city.y for city in self.solution]
-		self.path_plot.set_data(solution_x_list,solution_y_list)
-		print("current cost: \t" + str(self.solution_cost))
-
-	def plot_best_path(self):
-		best_x_list = [city.x for city in self.best]
-		best_y_list = [city.y for city in self.best]
-		self.path_plot.set_data(best_x_list,best_y_list)
-		print("best cost: \t" + str(self.best_cost))
+	def update_path_plot(self, path):
+		x_list = [city.x for city in path]
+		y_list = [city.y for city in path]
+		self.path_plot.set_data(x_list,y_list)
 
 	def plot_cities(self):
 		cities_x_list = [city.x for city in self.cities]
 		cities_y_list = [city.y for city in self.cities]
 		colors = [np.random.rand() for i in range(len(self.cities))]
-		self.ax.scatter(cities_x_list, cities_y_list, s=100, c=colors, alpha = 0.8)
+		self.ax[0].scatter(cities_x_list, cities_y_list, s=100, c=colors, alpha = 0.8)
 
 	def plot_path(self):
 		solution_x_list = [city.x for city in self.solution]
 		solution_y_list = [city.y for city in self.solution]
-		self.path_plot, = self.ax.plot(solution_x_list,solution_y_list)
+		self.path_plot, = self.ax[0].plot(solution_x_list,solution_y_list)
+
+	def plot_cost(self):
+		self.cost_plot, = self.ax[1].plot(self.time,self.cost_history)
+
+	def init_animate(self):
+		pass
 
 	def animate(self):
-		ani = animation.FuncAnimation(self.fig, self.update, frames=self.iterations, interval=1, blit=False, repeat=False, fargs=(self.iterations,))
+		ani = animation.FuncAnimation(self.fig, self.update, init_func=self.init_animate, frames=self.iterations, interval=1, blit=False, repeat=False, fargs=(self.iterations,))
 		plt.show()
 ##########################################################################
 # create solver and initial list of cities
-num_of_cities = 14
+num_of_cities = 10
 cities = [City(np.random.rand(),np.random.rand()) for i in range(num_of_cities)]
 
 solver = Solver(cities,1000)
