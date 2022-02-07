@@ -25,12 +25,13 @@ class Solver:
 
 		self.best = []
 		self.best_cost = 0
+		self.best_time = 0;
 
 		self.num_of_swaps = 1
 		self.path_plot = None
 
 		self.T = 0
-		self.k = 1
+		self.k = 0.5
 
 		self.iterations = iterations
 
@@ -99,6 +100,7 @@ class Solver:
 		if(self.solution_cost < self.best_cost):
 			self.best = self.solution
 			self.best_cost = self.solution_cost
+			self.best_time = frame
 
 	def update_path_plot(self, path):
 		x_list = [city.x for city in path]
@@ -117,7 +119,8 @@ class Solver:
 		self.path_plot, = self.ax[0].plot(solution_x_list,solution_y_list)
 
 	def plot_cost(self):
-		self.cost_plot, = self.ax[1].plot(self.time,self.cost_history)
+		self.cost_plot, = self.ax[1].plot(self.time,self.cost_history,c='r')
+		self.best_plot = self.ax[1].scatter([self.best_time],[self.best_cost],c='b')
 
 	def init_animate(self):
 		pass
@@ -127,9 +130,9 @@ class Solver:
 		plt.show()
 ##########################################################################
 # create solver and initial list of cities
-num_of_cities = 10
+num_of_cities = 20
 cities = [City(np.random.rand(),np.random.rand()) for i in range(num_of_cities)]
 
-solver = Solver(cities,1000)
+solver = Solver(cities,3000)
 solver.animate()
 ##########################################################################
