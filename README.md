@@ -1,3 +1,3 @@
 # TSP
 
-Finds an optimal path in the Traveling Salesman problem by simulated annealing.
+Finds an optimal path in the Traveling Salesman Problem by simulated annealing.
