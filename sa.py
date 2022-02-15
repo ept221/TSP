@@ -31,7 +31,7 @@ class Solver:
 		self.path_plot = None
 
 		self.T = 0
-		self.k = 0.5
+		self.k = 1
 
 		self.iterations = iterations
 
@@ -39,7 +39,17 @@ class Solver:
 		self.time = []
 		self.cost_plot = None
 		##################################################################
-		self.fig, self.ax = plt.subplots(2)
+		self.fig, self.ax = plt.subplots(1,2)
+		self.fig.set_size_inches(12, 5, forward=True)
+
+		self.ax[0].set_xlim(0,1)
+		self.ax[0].set_ylim(0,1)
+		self.ax[0].set_aspect('equal', adjustable='box')
+		self.ax[0].set_title('Map')
+
+		self.ax[1].set_title('Cost')
+		self.ax[1].set_xlabel('Iterations')
+		self.ax[1].set_ylabel('Path Length')
 
 		self.create_path()
 		self.plot_cities()
@@ -120,7 +130,8 @@ class Solver:
 
 	def plot_cost(self):
 		self.cost_plot, = self.ax[1].plot(self.time,self.cost_history,c='r')
-		self.best_plot = self.ax[1].scatter([self.best_time],[self.best_cost],c='b')
+		self.best_plot = self.ax[1].scatter([self.best_time],[self.best_cost],c='b',label='Minimum')
+		self.ax[1].legend()
 
 	def init_animate(self):
 		pass
@@ -130,9 +141,9 @@ class Solver:
 		plt.show()
 ##########################################################################
 # create solver and initial list of cities
-num_of_cities = 20
+num_of_cities = 15
 cities = [City(np.random.rand(),np.random.rand()) for i in range(num_of_cities)]
 
-solver = Solver(cities,3000)
+solver = Solver(cities,1000)
 solver.animate()
 ##########################################################################
