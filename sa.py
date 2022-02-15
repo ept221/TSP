@@ -3,15 +3,16 @@ import random
 import math
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import argparse
 ##########################################################################
-# city class
+# City class
 class City:
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
 
 ##########################################################################
-# solver class
+# Solver class
 class Solver:
 	def __init__(self, cities, iterations):
 		self.cities = cities
@@ -180,10 +181,18 @@ class Solver:
 		self.ax[1].legend()
 
 ##########################################################################
-# create solver and initial list of cities
-num_of_cities = 15
-cities = [City(np.random.rand(),np.random.rand()) for i in range(num_of_cities)]
+# Main
+if __name__ == "__main__":
+	description = 'TSP solver using simulated annealing'
+	p = argparse.ArgumentParser(description = description)
+	p.add_argument("city_count", help="Number of cities")
+	p.add_argument("max_iterations", help="Maximum number of iterations used by SA")
+	args = p.parse_args()
 
-solver = Solver(cities,2000)
-solver.animate()
+	city_count = int(args.city_count)
+	cities = [City(np.random.rand(),np.random.rand()) for i in range(city_count)]
+
+	max_iterations = int(args.max_iterations)
+	solver = Solver(cities,max_iterations)
+	solver.animate()
 ##########################################################################
