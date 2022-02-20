@@ -18,18 +18,24 @@ class Solver:
 		self.cities = cities
 		self.iterations = iterations
 		self.num_of_swaps = 1
-		self.T = 0
-		self.k = 1
+		self.T = None
+		self.k = None
+		self.stale = 0
+
+		self.compute_T = None
+		self.selection_criteria = None
 
 	##########################################################################
 	# Public Methods
-	def animate(self):
+	def animate(self, mode):
+		self.set_mode(mode)
 		self.init_solution_vars()
 		self.init_plots()
 		ani = animation.FuncAnimation(self.fig, self.update, init_func=self.init_animate, frames=self.iterations, interval=1, blit=False, repeat=False, fargs=(self.iterations,))
 		plt.show()
 
-	def solve(self):
+	def solve(self, mode):
+		self.set_mode(mode)
 		self.init_solution_vars()
 		for i in range(self.iterations):
 			self.time.append(i)
@@ -51,6 +57,24 @@ class Solver:
 		print("Minimum: " + str(self.best_cost))
 		print("Found at iteration " + str(self.best_time))
 
+	##########################################################################
+	# Mode selection method
+	def set_mode(self, mode):
+		if(mode == "ex0"):
+			self.T = 0
+			self.k = 1
+			self.compute_T = self.compute_T_ex0
+			self.selection_criteria = self.selection_criteria_ex0
+		elif(mode == "ex1"):
+			self.T = 0
+			self.k = 0
+			self.compute_T = self.compute_T_ex1
+			self.selection_criteria = self.selection_criteria_ex1
+		else:
+			self.T = 10000
+			self.k = 0.1
+			self.compute_T = self.compute_T_standard
+			self.selection_criteria = self.selection_criteria_standard
 	##########################################################################
 	# Setup method
 	def init_solution_vars(self):
@@ -122,21 +146,50 @@ class Solver:
 			cost += (dx**2 + dy**2)**0.5
 		return cost
 
-	def compute_T(self,frame):
-		self.T = frame*self.k + 0.000000000000000001
-
 	def select(self,frame):
 		self.compute_T(frame)
-		if(self.temp_cost < self.solution_cost or np.random.rand() > math.exp((self.solution_cost-self.temp_cost)/self.T)):
+		if(self.selection_criteria(frame)):
 			self.solution = self.temp
 			self.solution_cost = self.temp_cost
+			self.stale = 0
 		else:
+			self.stale += 1
 			return
 
 		if(self.solution_cost < self.best_cost):
 			self.best = self.solution
 			self.best_cost = self.solution_cost
 			self.best_time = frame
+
+	##########################################################################
+	# Temperature models
+	def compute_T_ex0(self, frame):
+		self.T = frame*self.k + 0.000000000000000001
+
+	def compute_T_ex1(self, frame):
+		pass
+
+	def compute_T_standard(self, frame):
+		self.T *= (1-self.k)
+		self.T = max(self.T, 0.000000000000000001)
+
+	##########################################################################
+	# Selection models
+	def selection_criteria_standard(self, frame):
+		return(self.temp_cost < self.solution_cost or math.exp((self.solution_cost-self.temp_cost)/self.T) > np.random.rand())
+
+	def selection_criteria_ex0(self, frame):
+		return(self.temp_cost < self.solution_cost or np.random.rand() > math.exp((self.solution_cost-self.temp_cost)/self.T))
+
+	def selection_criteria_ex1(self, frame):
+		if(self.temp_cost < self.solution_cost):
+			return True
+		elif(frame < self.iterations/2 and self.stale >= 200):
+			return True
+		elif(frame >= self.iterations/2 and self.stale >= 500):
+			return True
+		else:
+			return False
 
 	##########################################################################
 	# Plotting Methods
@@ -147,8 +200,8 @@ class Solver:
 		self.fig, self.ax = plt.subplots(1,2)
 		self.fig.set_size_inches(12, 5, forward=True)
 
-		self.ax[0].set_xlim(0,1)
-		self.ax[0].set_ylim(0,1)
+		#self.ax[0].set_xlim(0,1)
+		#self.ax[0].set_ylim(0,1)
 		self.ax[0].set_aspect('equal', adjustable='box')
 		self.ax[0].set_title('Map')
 
@@ -183,16 +236,23 @@ class Solver:
 ##########################################################################
 # Main
 if __name__ == "__main__":
+
+	# arg parser
 	description = 'TSP solver using simulated annealing'
 	p = argparse.ArgumentParser(description = description)
 	p.add_argument("city_count", help="Number of cities")
 	p.add_argument("max_iterations", help="Maximum number of iterations used by SA")
+	p.add_argument("mode", help="Solving method: standard, ex0, ex1")
 	args = p.parse_args()
 
+	# convert args
 	city_count = int(args.city_count)
+	max_iterations = int(args.max_iterations)
+
+	# create cities
 	cities = [City(np.random.rand(),np.random.rand()) for i in range(city_count)]
 
-	max_iterations = int(args.max_iterations)
+	# run the solver
 	solver = Solver(cities,max_iterations)
-	solver.animate()
+	solver.animate(args.mode)
 ##########################################################################
